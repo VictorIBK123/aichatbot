@@ -1,7 +1,6 @@
-import React from "react"
+import React, { useRef } from "react"
 import { memo } from "react"
 import { View, Text,Pressable, TouchableOpacity, StyleSheet,Dimensions, FlatList, Image } from "react-native"
-import Markdown from "react-native-markdown-display"
 import ListChildUser from "./listchilduser"
 import ListChildBot from "./listchildbot"
 
@@ -12,24 +11,32 @@ interface Data{
     key: string,
 }
 interface props {
-    completeChats: Data[],
+    chats: Data[],
     chatRefFL: any
 }
-const ChatList:React.FC<props> = ({chatRefFL, completeChats})=>{
-    
+
+const ChatList:React.FC<props> = ({chatRefFL, chats})=>{
     const {height}  =Dimensions.get('screen')
+    
     return (
+        chats.length>0?
         <FlatList
-                ref={chatRefFL}
-                style={{ paddingHorizontal:5, marginTop:10, height:height-50}}
-                data={completeChats}
-                renderItem={({item})=>{
-                    return(
-                        item.role=='assistant'?
-                        <ListChildBot item={item} />: <ListChildUser  item={item}/>
-                    )
-                }}
-             />
+            ref={chatRefFL}
+            style={{ paddingHorizontal:5, marginTop:10, flex:8/10}}
+            data={chats}
+            renderItem={({item})=>{
+                return(
+                    item.role=='assistant'?
+                    <ListChildBot item={item} />: <ListChildUser  item={item}/>
+                )
+            }}
+            />
+            :
+        <View style={{flex:1,  paddingHorizontal:8, justifyContent:'center', alignItems:'center'}}>
+            <Image style={{ height:150, width:150, borderRadius:150}} source={require('../assets/bot.jpg')} />
+            <Text style={{color:'white', textAlign:'center', marginTop:20, fontSize:17, fontWeight:'bold'}}>Hello, I am your AI Personal Assistant ?</Text>
+            <Text style={{color:'white', textAlign:'center', marginTop:5, fontSize:15}}>How can I help you today?</Text>
+        </View>
     )
 }
 const styles = StyleSheet.create({

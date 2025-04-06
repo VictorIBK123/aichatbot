@@ -9,11 +9,10 @@ const ListChildBot: React.FC<any> =({item})=>(
             <Markdown style={{
             body: { color: "white"},
             heading1: { color: "white" , backgroundColor:'black'},
-            code_block: {
+            codeBlock: {
                 borderWidth: 1,
                 borderColor: '#CCCCCC',
                 backgroundColor: '#000000',
-                zIndex:9,
                 padding: 10,
                 borderRadius: 4,
                 ...Platform.select({
