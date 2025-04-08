@@ -1,8 +1,9 @@
-import React, { useRef } from "react"
+import React, { useContext, useRef } from "react"
 import { memo } from "react"
 import { View, Text,Pressable, TouchableOpacity, StyleSheet,Dimensions, FlatList, Image } from "react-native"
 import ListChildUser from "./listchilduser"
 import ListChildBot from "./listchildbot"
+import { ThemeColor } from "../myContext/mycontext"
 
 interface Data{
     title: string,
@@ -17,7 +18,7 @@ interface props {
 
 const ChatList:React.FC<props> = ({chatRefFL, chats})=>{
     const {height}  =Dimensions.get('screen')
-    
+    const {themeColor} = useContext(ThemeColor)
     return (
         chats.length>0?
         <FlatList
@@ -34,8 +35,8 @@ const ChatList:React.FC<props> = ({chatRefFL, chats})=>{
             :
         <View style={{flex:1,  paddingHorizontal:8, justifyContent:'center', alignItems:'center'}}>
             <Image style={{ height:150, width:150, borderRadius:150}} source={require('../assets/bot.jpg')} />
-            <Text style={{color:'white', textAlign:'center', marginTop:20, fontSize:17, fontWeight:'bold'}}>Hello, I am your AI Personal Assistant ?</Text>
-            <Text style={{color:'white', textAlign:'center', marginTop:5, fontSize:15}}>How can I help you today?</Text>
+            <Text style={{color:themeColor[3], textAlign:'center', marginTop:20, fontSize:17, fontWeight:'bold'}}>Hello, I am your AI Personal Assistant ?</Text>
+            <Text style={{color:themeColor[3], textAlign:'center', marginTop:5, fontSize:15}}>How can I help you today?</Text>
         </View>
     )
 }

@@ -6,12 +6,20 @@ interface Data{
     message: string,
     role: string,
     key: string,
+    id: number
 }
-export const retrieveData=  async(completeChats: Data|unknown, setCompleteChats: Dispatch<SetStateAction<Data[]>> , setTheme: React.Dispatch<React.SetStateAction<string>>, theme:string)=>{
+export const retrieveData=  async(completeChats: Data|unknown, setCompleteChats: Dispatch<SetStateAction<Data[]>> , setTheme: React.Dispatch<React.SetStateAction<string>>, theme:string, setHistoryData: Dispatch<SetStateAction<{ key: string, title: string }[]>>)=>{
       const data=  await AsyncStorage.getItem('aichat')
-      const {completeChats1, theme1} = data? await JSON.parse(data): {completeChats1: [{title: 'New Chat', message:'Hello, What can I do for you today', role:'assistant', key:'0'}], theme1:'dark'}
+      const {completeChats1, theme1} = data? await JSON.parse(data): {completeChats1: [], theme1:'dark'}
       setCompleteChats(completeChats1)
       setTheme(theme1)
+      setHistoryData(completeChats1.map((element:{title: string, id:number}, index: number)=>{
+        return ({key:index.toString(), title:element.title, id:element.id})
+    }).reverse().filter((element: { key: string; title: string }, index: number, self: { key: string; title: string }[]) => {
+        if (index==0) return true
+        else if(index>0 && self[index].title!=self[index-1].title) return true
+        else return false
+    }))
 }
 
 export const saveData = async(completeChats: Data|unknown, theme:string)=>{

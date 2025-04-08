@@ -1,14 +1,16 @@
 import { View,Pressable, Image , StyleSheet, Text} from "react-native"
 import { memo } from "react"
 // component for each user chat
-const ListChildUser: React.FC<any> =({item})=>(
+const ListChildUser: React.FC<any> =({item})=>{
+    console.log('user rendered')
+    return(
     <View style={{alignSelf: 'flex-end', flexDirection:'row-reverse', maxWidth: '80%',}}>
         <Image source={require('../assets/user.jpg')} style={styles.profileIcon} />
         <Pressable style={[{marginRight:3, backgroundColor:'#24a2f0', borderTopRightRadius:0}, styles.mainChat]}>
             <Text>{item.message}</Text>
         </Pressable>
     </View>
-)
+)}
 const styles = StyleSheet.create({
     profileIcon:{
         height:30,

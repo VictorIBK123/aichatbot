@@ -1,18 +1,22 @@
 import { View,Pressable, Image , StyleSheet, Text, Platform} from "react-native"
-import { memo } from "react"
+import { memo, useContext } from "react"
 import Markdown from "react-native-markdown-display"
+import { ThemeColor } from "../myContext/mycontext"
 // component for each bot chat
-const ListChildBot: React.FC<any> =({item})=>(
+const ListChildBot: React.FC<any> =({item})=>{
+  console.log('bot rendered')
+  const {themeColor}= useContext(ThemeColor)
+  return (
     <View style={{alignSelf: "flex-start", flexDirection:'row', maxWidth: '80%',}}>
         <Image source={require('../assets/bot.jpg')} style={styles.profileIcon} />
         <Pressable style={[styles.mainChat,{marginLeft:3}]}>
             <Markdown style={{
-            body: { color: "white"},
-            heading1: { color: "white" , backgroundColor:'black'},
+            body: { color: themeColor[3]},
+            heading1: { color: themeColor[3], backgroundColor:themeColor[0]},
             codeBlock: {
                 borderWidth: 1,
                 borderColor: '#CCCCCC',
-                backgroundColor: '#000000',
+                backgroundColor: themeColor[1],
                 padding: 10,
                 borderRadius: 4,
                 ...Platform.select({
@@ -23,18 +27,18 @@ const ListChildBot: React.FC<any> =({item})=>(
                     fontFamily: 'monospace',
                   },
                 }),
-              },                code_inline: {backgroundColor: "#000000",color: "#ffffff",fontFamily: "monospace",paddingHorizontal: 5,borderRadius: 3,},
-                hr: {borderBottomWidth: 1,borderBottomColor: "#fff",marginVertical: 10,},
-                table: {borderWidth: 1,borderColor: '#ffffff',borderRadius: 3,},
-                thead: {borderWidth:1, borderColor:'white' },
-                th:{borderWidth:1, borderColor:'white',fontWeight:'bold' },
-                td: {borderWidth:1, borderColor:'white', },
+              },                code_inline: {backgroundColor: themeColor[0],color: themeColor[3],fontFamily: "monospace",paddingHorizontal: 5,borderRadius: 3,},
+                hr: {borderBottomWidth: 1,borderBottomColor: themeColor[3],marginVertical: 10,},
+                table: {borderWidth: 1,borderColor: themeColor[3],borderRadius: 3,},
+                thead: {borderWidth:1, borderColor:themeColor[3] },
+                th:{borderWidth:1, borderColor:themeColor[3],fontWeight:'bold' },
+                td: {borderWidth:1, borderColor:themeColor[3]},
                 link: {color:'#24a2f0', textDecorationLine: 'underline',},
 
         }}>{item.message}</Markdown>
         </Pressable>
     </View>
-)
+)}
 const styles = StyleSheet.create({
     profileIcon:{
         height:30,

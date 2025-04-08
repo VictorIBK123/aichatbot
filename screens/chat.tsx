@@ -1,16 +1,13 @@
-import React, { useEffect, useRef, useState } from "react"
-import { View,Text, FlatList, Image, TextInput, Dimensions, Pressable, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native"
-
-import { myContext } from "../myContext/mycontext";
+import React, { useCallback, useEffect, useRef, useState } from "react"
+import { View,Text, FlatList,TextInput, Dimensions } from "react-native"
+import { CompleteChatsContext,ThemeColor } from "../myContext/mycontext";
 import { useContext } from "react";
 import Markdown from "react-native-markdown-display";
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import ChatList from "../components/chatlist";
-import Ionicons from '@expo/vector-icons/Ionicons';
 import Chathistory from "../components/chathistory";
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 import { Dispatch, SetStateAction } from "react";
 import axios from "axios";
+import Footer from "../components/chatfooter";
 
 interface NewChatProps{
     setTitle: Dispatch<SetStateAction<string>>,
@@ -25,12 +22,15 @@ interface Data{
     message: string,
     role: string,
     key: string,
+    id: number
 }
 export const ChatScreen: React.FC<props> =({navigation})=>{
     const [title, setTitle] = useState('New Chat')
+    const {completeChats, setCompleteChats} = useContext(CompleteChatsContext)
+    const [id, setId] = useState<number>(completeChats.length>0?completeChats[completeChats.length-1].id+1:1)
     const chatRefFL = useRef<FlatList>(null)
     const textIn = useRef<TextInput>(null)
-    const {completeChats, setCompleteChats} = useContext(myContext)
+    const {themeColor} = useContext(ThemeColor)
     const [data, setData] = useState<Data[]>([]) //data to render in the chat flatlist
     const [showActivityIndicatoe, setShowActivityInndicator] = useState<boolean>(false)
     const [userMessage, setUserMessage] = useState<string>('')
@@ -56,17 +56,16 @@ export const ChatScreen: React.FC<props> =({navigation})=>{
         }
     },[completeChats])
     useEffect(()=>{
-        setData(completeChats.filter((element: { title: string; })=>element.title==title))
-    },[title, completeChats])
+        console.log(completeChats)
+        console.log(id)
+        setData(completeChats.filter((element: { title: string;id:number })=>element.title==title && element.id==id))
+    },[title, completeChats,id])
     useEffect(()=>{
         // setting title for new chat
         if (title=='New Chat' && data.length>=2){
-            console.log('fetching title')
-            console.log(data.length)
                 const newTitle = data[0].message.slice(0, 20)
-                console.log(newTitle)
                 setTitle(newTitle)
-                setCompleteChats(completeChats.map((element: { title: string; })=>{
+                setCompleteChats(completeChats.map((element: { title: string})=>{
                     if (element.title=='New Chat'){
                         return ({...element, title: newTitle })
                     }
@@ -76,83 +75,64 @@ export const ChatScreen: React.FC<props> =({navigation})=>{
                 }))
         }
     },[title, data])
-    const scrollToEnd =()=>{
+    const scrollToEnd =useCallback(()=>{
         chatRefFL.current?.scrollToEnd({animated: true})
-    }
+    },[chatRefFL])
     
-    const sendToModel: ()=>void = async()=>{
-        setShowActivityInndicator(true)
-        var message = userMessage
-        setUserMessage('')
-        setCompleteChats((prev: Data[])=>[...prev, {title, role: 'user', message:userMessage, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
-        var chatForwarding = completeChats.filter((item: { title: string; })=>item.title==title).map((element:Data)=>({role:element.role, content:element.message})).concat({role:'user', content:message}).slice(-10)
-        axios.post("https://openrouter.ai/api/v1/chat/completions", 
-            {
-                model: model,
-                messages: chatForwarding
-              },
-            {headers: fetchHeaders}
-          )
-          .then((response)=>{
-            setShowActivityInndicator(false)
-            setCompleteChats((prev: Data[])=>[...prev, {title, role: response.data.choices[0].message.role, message: response.data.choices[0].message.content, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
+    const sendToModel: ()=>void = useCallback(
+        async()=>{
+            setShowActivityInndicator(true)
+            var message = userMessage
+            setUserMessage('')
+            if (completeChats.length==0){
+                setCompleteChats([{title, role: 'user', message:userMessage, key: '1', id: 1}])
             }
-        )
-          .catch((e)=>{setShowActivityInndicator(false); alert(e.message)})
-    }
-    const storeMessage =(text: string): void =>{
+            else if (title=='New Chat'){
+                setCompleteChats((prev: Data[])=>[...prev, {title, role: 'user', message:userMessage, id: prev[prev.length-1].id+1, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
+            }
+            else{
+                setCompleteChats((prev: Data[])=>[...prev, {title, role: 'user', message:userMessage, id: prev[prev.length-1].id, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
+            }
+            
+            var chatForwarding = completeChats.length>0?completeChats.filter((item: { title: string; })=>item.title==title).map((element:Data)=>({role:element.role, content:element.message})).concat({role:'user', content:message}).slice(-10):[{role:'user', content:message}]
+            axios.post("https://openrouter.ai/api/v1/chat/completions", 
+                {
+                    model: model,
+                    messages: chatForwarding
+                  },
+                {headers: fetchHeaders}
+              )
+              .then((response)=>{
+                setShowActivityInndicator(false)
+                setCompleteChats((prev: Data[])=>[...prev, {title, role: response.data.choices[0].message.role, message: response.data.choices[0].message.content, id:prev[prev.length-1].id, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
+                }
+            )
+              .catch((e)=>{setShowActivityInndicator(false); alert(e.message)})
+        },[setShowActivityInndicator, userMessage, setUserMessage, setCompleteChats, completeChats,title, model, fetchHeaders, ]
+    ) 
+    const storeMessage =useCallback((text: string): void =>{
         setUserMessage(text)
-    }
+    },[setUserMessage])
     useEffect(()=>{
         navigation.setOptions({title})
     },[])
-    const newChatPressed =()=>{
+    const newChatPressed =useCallback(()=>{
         if (showActivityIndicatoe) setShowActivityInndicator(false)
         setData([])
+        setId(completeChats.length>0?completeChats[completeChats.length-1].id+1:1)
         setTitle('New Chat')
         navigation.setOptions({
             title: 'New Chat'
         })
-    }
-    const onOffSearch =()=>{
+    },[setShowActivityInndicator, setData,showActivityIndicatoe, setTitle, navigation])
+    const onOffSearch =useCallback(()=>{
         setModel(model=="deepseek/deepseek-chat-v3-0324:free"?"deepseek/deepseek-chat-v3-0324:free:online":"deepseek/deepseek-chat-v3-0324:free")
-    }
+    },[model, setModel])
     return (
-        <View style={{flex:1, backgroundColor:'#101010'}}>
-            <Chathistory navigation={navigation} title={title} setTitle={setTitle}/>
+        <View style={{flex:1, backgroundColor:themeColor[0]}}>
+            <Chathistory navigation={navigation} title={title} id={id} setId={setId} setTitle={setTitle}/>
             <ChatList chatRefFL={chatRefFL} chats={data}/>
-            <View style={{marginHorizontal:8, flex:2/10, marginBottom:10 }}>
-                <View style={{flexDirection:'row',}}>
-                    <View style={{height:50, alignItems:'center', borderWidth:1, borderColor:'white', borderRadius:20, flexDirection:'row', backgroundColor:'#202020', flex:9/10}}>
-                        <TouchableOpacity style={{flex:1/7, alignItems:'center'}} >
-                            <Ionicons name="add-circle-outline" size={30} color="white" />
-                        </TouchableOpacity>
-                        <TextInput ref={textIn} value={userMessage} multiline={true} onChangeText={storeMessage} style={{maxHeight:150, minHeight:50, color:'white',flex:5/7 }}/>
-                        <View style={{flex:1/7, alignItems:'center'}}>
-                            { showActivityIndicatoe &&
-                                <TouchableOpacity  >
-                                    <ActivityIndicator size={30} color={'white'} />
-                                </TouchableOpacity>}
-                            {userMessage.trim().length>0 && !showActivityIndicatoe &&
-                                <TouchableOpacity onPress={sendToModel}>
-                                    <MaterialCommunityIcons name="send-circle-outline" size={30} color="white" />
-                                </TouchableOpacity>
-                            }
-                        </View>
-                    </View>  
-                    <TouchableOpacity onPress={scrollToEnd} style={{zIndex:10, alignItems:'center', justifyContent:'center', flex:1/10}}>
-                        <FontAwesome5 name='arrow-circle-down' size={30} color='white' />
-                    </TouchableOpacity> 
-                </View>
-                <View style={{flexDirection:'row'}}>
-                    <TouchableOpacity onPress={onOffSearch} style={{marginLeft:20, padding:5,borderColor:'white',borderWidth:1, paddingHorizontal:10, marginTop:10, borderRadius:5, backgroundColor:model=="deepseek/deepseek-chat-v3-0324:free"?'#222222':'#24a2f0'}}>
-                        <Text style={{color:'white'}}>Search</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={newChatPressed} style={{marginLeft:20, padding:5,borderColor:'white',borderWidth:1, paddingHorizontal:10, marginTop:10, borderRadius:5, backgroundColor:'#222222'}}>
-                        <Text style={{color:'white', fontWeight:'bold'}}>New Chat</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
+            <Footer textIn={textIn} userMessage={userMessage} storeMessage={storeMessage} showActivityIndicatoe={showActivityIndicatoe} sendToModel={sendToModel} scrollToEnd={scrollToEnd} onOffSearch={onOffSearch} newChatPressed={newChatPressed} model={model}/>
         </View>
     )
 }
