@@ -1,6 +1,6 @@
 import React, { useContext, useRef } from "react"
 import { memo } from "react"
-import { View, Text,Pressable, TouchableOpacity, StyleSheet,Dimensions, FlatList, Image } from "react-native"
+import { View, Text, StyleSheet,Dimensions, FlatList, Image } from "react-native"
 import ListChildUser from "./listchilduser"
 import ListChildBot from "./listchildbot"
 import { ThemeColor } from "../myContext/mycontext"

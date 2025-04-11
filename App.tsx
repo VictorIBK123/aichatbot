@@ -5,7 +5,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { useEffect, useMemo, useState } from 'react';
 import { CompleteChatsContext, ThemeContext, HistoryDataContext, ThemeColor } from './myContext/mycontext';
 import { retrieveData, saveData} from './functions/retrievestoredata';
-import { View, Text, TouchableOpacity } from 'react-native';
+import {Text, TouchableOpacity } from 'react-native';
 import Entypo from '@expo/vector-icons/Entypo';
 
 export default function App() {
@@ -14,6 +14,7 @@ export default function App() {
     message: string,
     role: string,
     key: string,
+    id: number,
   }
   const [completeChats, setCompleteChats] = useState<Data[]>([])
   const [historyData, setHistoryData] = useState<{key: string, title:string}[]>([])

@@ -1,4 +1,4 @@
-import React, { memo, useEffect, useState, useContext, Dispatch, SetStateAction } from "react"
+import React, { memo, useEffect, useContext, Dispatch, SetStateAction } from "react"
 import { View, Text, FlatList, TouchableOpacity, Dimensions } from "react-native"
 import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated"
 import Entypo from '@expo/vector-icons/Entypo';

@@ -4,7 +4,6 @@ import { ThemeColor } from "../myContext/mycontext"
 import { View, TextInput,TouchableOpacity, ActivityIndicator, Text } from "react-native"
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5'
 import Ionicons from '@expo/vector-icons/Ionicons';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
 interface FooterProps {
     textIn: React.RefObject<TextInput>;
@@ -24,10 +23,10 @@ const Footer: React.FC<FooterProps> = ({textIn, userMessage, storeMessage, showA
         <View style={{marginHorizontal:8, flex:2/10, marginBottom:10 }}>
                 <View style={{flexDirection:'row',}}>
                     <View style={{height:50, alignItems:'center', borderWidth:1, borderColor:themeColor[3], borderRadius:20, flexDirection:'row', backgroundColor:themeColor[1], flex:9/10}}>
-                        <TouchableOpacity style={{flex:1/7, alignItems:'center'}} >
+                        {/* <TouchableOpacity style={{flex:1/7, alignItems:'center'}} >
                             <Ionicons name="add-circle-outline" size={30} color={themeColor[3]} />
-                        </TouchableOpacity>
-                        <TextInput ref={textIn} value={userMessage} multiline={true} onChangeText={storeMessage} style={{maxHeight:150, minHeight:50, color:themeColor[3],flex:5/7 }}/>
+                        </TouchableOpacity> */}
+                        <TextInput ref={textIn} value={userMessage} multiline={true} onChangeText={storeMessage} style={{paddingLeft:20,maxHeight:150, minHeight:50, color:themeColor[3],flex:6/7 }}/>
                         <View style={{flex:1/7, alignItems:'center'}}>
                             { showActivityIndicatoe &&
                                 <TouchableOpacity  >

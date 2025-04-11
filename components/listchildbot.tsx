@@ -1,10 +1,9 @@
-import { View,Pressable, Image , StyleSheet, Text, Platform} from "react-native"
+import { View,Pressable, Image , StyleSheet,Platform} from "react-native"
 import { memo, useContext } from "react"
 import Markdown from "react-native-markdown-display"
 import { ThemeColor } from "../myContext/mycontext"
 // component for each bot chat
 const ListChildBot: React.FC<any> =({item})=>{
-  console.log('bot rendered')
   const {themeColor}= useContext(ThemeColor)
   return (
     <View style={{alignSelf: "flex-start", flexDirection:'row', maxWidth: '80%',}}>

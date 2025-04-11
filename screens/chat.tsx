@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react"
-import { View,Text, FlatList,TextInput, Dimensions } from "react-native"
+import { View,FlatList,TextInput, Dimensions } from "react-native"
 import { CompleteChatsContext,ThemeColor } from "../myContext/mycontext";
 import { useContext } from "react";
-import Markdown from "react-native-markdown-display";
 import ChatList from "../components/chatlist";
 import Chathistory from "../components/chathistory";
 import { Dispatch, SetStateAction } from "react";
@@ -37,7 +36,7 @@ export const ChatScreen: React.FC<props> =({navigation})=>{
     const {height, width} = Dimensions.get('screen')
     const [model, setModel] = useState<string>("deepseek/deepseek-chat-v3-0324:free")
     const fetchHeaders = {
-        "Authorization": "Bearer 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",
+        "Authorization": "Bearer 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",
         "Content-Type": "application/json"
       }
      
@@ -56,8 +55,6 @@ export const ChatScreen: React.FC<props> =({navigation})=>{
         }
     },[completeChats])
     useEffect(()=>{
-        console.log(completeChats)
-        console.log(id)
         setData(completeChats.filter((element: { title: string;id:number })=>element.title==title && element.id==id))
     },[title, completeChats,id])
     useEffect(()=>{
