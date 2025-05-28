@@ -12,12 +12,10 @@ interface FooterProps {
     showActivityIndicatoe: boolean;
     sendToModel: () => void;
     scrollToEnd: () => void;
-    onOffSearch: () => void;
     newChatPressed: () => void;
-    model: string;
 }
 
-const Footer: React.FC<FooterProps> = ({textIn, userMessage, storeMessage, showActivityIndicatoe, sendToModel, scrollToEnd, onOffSearch, newChatPressed, model}) => {
+const Footer: React.FC<FooterProps> = ({textIn, userMessage, storeMessage, showActivityIndicatoe, sendToModel, scrollToEnd, newChatPressed}) => {
     const {themeColor}= useContext(ThemeColor)
     return (
         <View style={{marginHorizontal:8, flex:2/10, marginBottom:10 }}>
@@ -44,9 +42,9 @@ const Footer: React.FC<FooterProps> = ({textIn, userMessage, storeMessage, showA
                     </TouchableOpacity> 
                 </View>
                 <View style={{flexDirection:'row'}}>
-                    <TouchableOpacity onPress={onOffSearch} style={{marginLeft:20, padding:5,borderColor:themeColor[3],borderWidth:1, paddingHorizontal:10, marginTop:10, borderRadius:5, backgroundColor:model=="deepseek/deepseek-chat-v3-0324:free"?themeColor[2]:'#24a2f0'}}>
+                    {/* <TouchableOpacity style={{marginLeft:20, padding:5,borderColor:themeColor[3],borderWidth:1, paddingHorizontal:10, marginTop:10, borderRadius:5, backgroundColor:themeColor[2]}}>
                         <Text style={{color:themeColor[3]}}>Search</Text>
-                    </TouchableOpacity>
+                    </TouchableOpacity> */}
                     <TouchableOpacity onPress={newChatPressed} style={{marginLeft:20, padding:5,borderColor:themeColor[3],borderWidth:1, paddingHorizontal:10, marginTop:10, borderRadius:5, backgroundColor:themeColor[2]}}>
                         <Text style={{color:themeColor[3], fontWeight:'bold'}}>New Chat</Text>
                     </TouchableOpacity>

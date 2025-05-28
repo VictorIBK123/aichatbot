@@ -7,6 +7,8 @@ import Chathistory from "../components/chathistory";
 import { Dispatch, SetStateAction } from "react";
 import axios from "axios";
 import Footer from "../components/chatfooter";
+import { GoogleGenAI } from "@google/genai";
+
 
 interface NewChatProps{
     setTitle: Dispatch<SetStateAction<string>>,
@@ -26,7 +28,7 @@ interface Data{
 export const ChatScreen: React.FC<props> =({navigation})=>{
     const [title, setTitle] = useState('New Chat')
     const {completeChats, setCompleteChats} = useContext(CompleteChatsContext)
-    const [id, setId] = useState<number>(completeChats.length>0?completeChats[completeChats.length-1].id+1:1)
+    const [id, setId] = useState<number>(completeChats.length>0?Math.max(...completeChats.map((e: { id: number; })=>e.id))+1:1)
     const chatRefFL = useRef<FlatList>(null)
     const textIn = useRef<TextInput>(null)
     const {themeColor} = useContext(ThemeColor)
@@ -34,15 +36,11 @@ export const ChatScreen: React.FC<props> =({navigation})=>{
     const [showActivityIndicatoe, setShowActivityInndicator] = useState<boolean>(false)
     const [userMessage, setUserMessage] = useState<string>('')
     const {height, width} = Dimensions.get('screen')
-    const [model, setModel] = useState<string>("deepseek/deepseek-chat-v3-0324:free")
-    const fetchHeaders = {
-        "Authorization": "Bearer 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",
-        "Content-Type": "application/json"
-      }
-     
+    const ai = new GoogleGenAI({ apiKey: "AIzaSyCqNxXZMBNGqQamU9pHXO2wWLvmfCIPR4I" });
+    
     useEffect(()=>{
         navigation.setOptions({
-        title
+        title: title+'...'
         })
     },[title])
     // to scroll down and hide keyboard after a message is added from the bot or user
@@ -61,15 +59,16 @@ export const ChatScreen: React.FC<props> =({navigation})=>{
         // setting title for new chat
         if (title=='New Chat' && data.length>=2){
                 const newTitle = data[0].message.slice(0, 20)
-                setTitle(newTitle)
+                setTitle(newTitle+'...')
                 setCompleteChats(completeChats.map((element: { title: string})=>{
                     if (element.title=='New Chat'){
-                        return ({...element, title: newTitle })
+                        return ({...element, title: newTitle+'...' })
                     }
                     else{
                         return element
                     }
                 }))
+                
         }
     },[title, data])
     const scrollToEnd =useCallback(()=>{
@@ -84,28 +83,29 @@ export const ChatScreen: React.FC<props> =({navigation})=>{
             if (completeChats.length==0){
                 setCompleteChats([{title, role: 'user', message:userMessage, key: '1', id: 1}])
             }
-            else if (title=='New Chat'){
-                setCompleteChats((prev: Data[])=>[...prev, {title, role: 'user', message:userMessage, id: prev[prev.length-1].id+1, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
-            }
-            else{
-                setCompleteChats((prev: Data[])=>[...prev, {title, role: 'user', message:userMessage, id: prev[prev.length-1].id, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
+            else {
+                setCompleteChats((prev: Data[])=>[...prev, {title, role: 'user', message:userMessage, id, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
             }
             
-            var chatForwarding = completeChats.length>0?completeChats.filter((item: { title: string; })=>item.title==title).map((element:Data)=>({role:element.role, content:element.message})).concat({role:'user', content:message}).slice(-10):[{role:'user', content:message}]
-            axios.post("https://openrouter.ai/api/v1/chat/completions", 
-                {
-                    model: model,
-                    messages: chatForwarding
-                  },
-                {headers: fetchHeaders}
-              )
-              .then((response)=>{
+            
+            var chatForwarding = completeChats.length>0?completeChats.filter((item: { title: string; })=>item.title==title).map((element:Data)=>({role:element.role=='assistant'?'model':'user', parts:[{text: element.message}]})).slice(-10):[]
+
+            const chat = ai.chats.create({
+                model: "gemini-2.0-flash",
+                history: chatForwarding
+              });
+              try{
+                const stream1 = await chat.sendMessage({
+                  message
+                });
                 setShowActivityInndicator(false)
-                setCompleteChats((prev: Data[])=>[...prev, {title, role: response.data.choices[0].message.role, message: response.data.choices[0].message.content, id:prev[prev.length-1].id, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
-                }
-            )
-              .catch((e)=>{setShowActivityInndicator(false); alert(e.message)})
-        },[setShowActivityInndicator, userMessage, setUserMessage, setCompleteChats, completeChats,title, model, fetchHeaders, ]
+                setCompleteChats((prev: string | any[])=>[...prev, {title, role: 'assistant', message: stream1.text, id, key: (parseInt(prev[prev.length-1].key)+1).toString()}])
+              }
+              catch(error){
+                setShowActivityInndicator(false)
+                alert( error);
+              }
+        },[setShowActivityInndicator, userMessage, setUserMessage, setCompleteChats, completeChats,title]
     ) 
     const storeMessage =useCallback((text: string): void =>{
         setUserMessage(text)
@@ -116,20 +116,17 @@ export const ChatScreen: React.FC<props> =({navigation})=>{
     const newChatPressed =useCallback(()=>{
         if (showActivityIndicatoe) setShowActivityInndicator(false)
         setData([])
-        setId(completeChats.length>0?completeChats[completeChats.length-1].id+1:1)
+        setId(completeChats.length>0?Math.max(...completeChats.map((e: { id: number; })=>e.id))+1:1)
         setTitle('New Chat')
         navigation.setOptions({
             title: 'New Chat'
         })
     },[setShowActivityInndicator, setData,showActivityIndicatoe, setTitle, navigation])
-    const onOffSearch =useCallback(()=>{
-        setModel(model=="deepseek/deepseek-chat-v3-0324:free"?"deepseek/deepseek-chat-v3-0324:free:online":"deepseek/deepseek-chat-v3-0324:free")
-    },[model, setModel])
     return (
         <View style={{flex:1, backgroundColor:themeColor[0]}}>
             <Chathistory navigation={navigation} title={title} id={id} setId={setId} setTitle={setTitle}/>
             <ChatList chatRefFL={chatRefFL} chats={data}/>
-            <Footer textIn={textIn} userMessage={userMessage} storeMessage={storeMessage} showActivityIndicatoe={showActivityIndicatoe} sendToModel={sendToModel} scrollToEnd={scrollToEnd} onOffSearch={onOffSearch} newChatPressed={newChatPressed} model={model}/>
+            <Footer textIn={textIn} userMessage={userMessage} storeMessage={storeMessage} showActivityIndicatoe={showActivityIndicatoe} sendToModel={sendToModel} scrollToEnd={scrollToEnd} newChatPressed={newChatPressed} />
         </View>
     )
 }

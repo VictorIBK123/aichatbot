@@ -1,7 +1,8 @@
-import { View,Pressable, Image , StyleSheet,Platform} from "react-native"
+import { View,Pressable, Image , StyleSheet,Platform, TouchableOpacity, Clipboard} from "react-native"
 import { memo, useContext } from "react"
 import Markdown from "react-native-markdown-display"
 import { ThemeColor } from "../myContext/mycontext"
+import Ionicons from '@expo/vector-icons/Ionicons'
 // component for each bot chat
 const ListChildBot: React.FC<any> =({item})=>{
   const {themeColor}= useContext(ThemeColor)
@@ -35,7 +36,11 @@ const ListChildBot: React.FC<any> =({item})=>{
                 link: {color:'#24a2f0', textDecorationLine: 'underline',},
 
         }}>{item.message}</Markdown>
+        <TouchableOpacity onPress={()=>{Clipboard.setString(item.message);alert('Copied')}} style={{marginBottom:10}}>
+          <Ionicons name="copy-outline" style={{alignSelf:'flex-end', paddingRight:20}} size={15} color={themeColor[3]} />
+        </TouchableOpacity>
         </Pressable>
+        
     </View>
 )}
 const styles = StyleSheet.create({
@@ -46,7 +51,6 @@ const styles = StyleSheet.create({
         marginTop:8
     },
     mainChat:{
-        marginBottom:10, 
         paddingHorizontal:8, 
         borderRadius:5, 
         padding:8

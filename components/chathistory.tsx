@@ -47,13 +47,16 @@ const ChatHistory:React.FC<Props> =({navigation, title, setTitle,id, setId})=>{
         menuLeft.value==0? menuLeft.value= withTiming(-menuWidth, {duration:300}):menuLeft.value= withTiming(0, {duration:300})
     }
     useEffect(()=>{
-            setHistoryData(completeChats.map((element, index)=>{
-                return ({key:index.toString(), title:element.title, id:element.id})
-            }).reverse().filter((element,index, self)=>{
-                if (index==0) return true
-                else if(index>0 && self[index].id!=self[index-1].id) return true
-                else return false
-            }))
+        const newArray: ({key:string, title: string, id:number})[] =[]
+        const originalArray = completeChats.map((e, index)=>({key:index.toString(),title:e.title, id:e.id}))
+        var element
+        while (originalArray.length>0){
+            element= originalArray.shift()
+            if (element?.id !== undefined && !newArray.map((e)=>e.id).includes(element.id)){
+                newArray.push(element)
+            }
+        }
+        setHistoryData(newArray.reverse())
     },[title])
     useEffect(()=>{
         navigation.setOptions({headerLeft: ()=>(<TouchableOpacity onPress={switchMenuPosition} style={{marginLeft:10}}><Entypo name='menu' size={24} color={themeColor[3]} /></TouchableOpacity> )})
@@ -77,7 +80,7 @@ const ChatHistory:React.FC<Props> =({navigation, title, setTitle,id, setId})=>{
             setTheme('dark')
         }
     }
-    return (<Animated.View style={[{position:'absolute', height:height-70, flex:1, zIndex:12,backgroundColor:themeColor[2],  width: width-width/4,}, animatedMenuStyle]}>
+    return (<Animated.View style={[{position:'absolute', height:height-height/5, flex:1, zIndex:12,backgroundColor:themeColor[2],  width: width-width/4,}, animatedMenuStyle]}>
         <FlatList
             style={{ flex:9/10}}
             data={historyData}
